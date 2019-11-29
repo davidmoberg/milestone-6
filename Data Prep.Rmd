@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(readxl)
 library(janitor)
 library(rstanarm)
@@ -17,6 +17,15 @@ library(skimr)
 library(tidyverse)
 ```
 
-```{r Prep data for use}
+```{r read in power plant data}
+plantData <- read_xlsx("eia8602016/3_1_Generator_Y2016.xlsx", sheet = "Operable", skip = 1, n_max = 20724)
+plantData<-plantData%>%select("Plant Name", "State", "County", "Technology", "Operating Year")
+```
+
+```{r read in presidential election data}
+presData <- read_csv("raw-data/countypres_2000-2016.csv")
+presData<- presData%>%filter(year == 2016)%>%select(state_po, county, party)
+presData<-presData%>%mutate(state = state_po)%>%select(state, county, party)
+presData
 ```
 
