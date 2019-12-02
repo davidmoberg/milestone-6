@@ -32,7 +32,13 @@ presData<-presData%>%
 ```
 
 ```{r, join datasets, clean for needed results}
-realData<- full_join(plantData, presData)
-realData<- realData%>%distinct(plant_name, .keep_all = TRUE)
+real_data<- full_join(plantData, presData)
+real_data<- real_data%>%distinct(plant_name, .keep_all = TRUE)
 ```
 
+
+```{r}
+real_data%>%
+  ggplot(aes(party, technology)) + 
+  geom_jitter(height = .1, alpha = .1)
+```
