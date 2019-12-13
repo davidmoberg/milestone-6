@@ -11,8 +11,11 @@ library(readxl)
 library(janitor)
 library(rstanarm)
 library(reprex)
+library(sf)
+library(raster)
 library(bootstrap)
 library(gt)
+library(coefplot)
 library(skimr)
 library(tidyverse)
 ```
@@ -25,20 +28,52 @@ plantData<-plantData%>%select("Plant Name", "State", "County", "Technology", "Op
 ```{r read in presidential election data}
 presData <- read_csv("raw-data/countypres_2000-2016.csv")%>%clean_names()
 presData<- presData%>%
-  filter(year == 2016)%>%group_by(county)%>%arrange(desc(candidatevotes))%>%slice(1)%>%ungroup()%>%
+  filter(year == 2016)%>%
+  group_by(state_po)%>%
+  group_by(county)%>%
+  arrange(desc(candidatevotes))%>%
+  slice(1)%>%
+  ungroup()%>%
+  ungroup()%>%
   select(state_po, county, party, candidate)
+
+
 presData<-presData%>%
   mutate(state = state_po)%>%select(state, county, party, candidate)
 ```
 
 ```{r, join datasets, clean for needed results}
-real_data<- full_join(plantData, presData)
+real_data<- full_join(plantData, presData, by = "county")
 real_data<- real_data%>%distinct(plant_name, .keep_all = TRUE)
 ```
+
+```{r, streamline technology classifications}
+#Solar
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Solar Thermal without Energy Storage", "Solar"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Solar Photovoltaic", "Solar"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Solar Thermal with Energy Storage", "Solar"))
+
+#Biomass
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Wood/Wood Waste Biomass", "Biomass"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Other Waste Biomass", "Biomass"))
+
+#Oil/Petroleum
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Petroleum Coke", "Oil"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Petroleum Liquids", "Oil"))
+
+#Wind
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Onshore Wind Turbine", "Wind"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Offshore Wind Turbine", "Wind"))
+
+
+
+```
+
 
 
 ```{r}
 real_data%>%
   ggplot(aes(party, technology)) + 
-  geom_jitter(height = .1, alpha = .1)
+  geom_jitter(height = .1, alpha = .4)
 ```
+
