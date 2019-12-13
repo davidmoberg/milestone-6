@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(readxl)
 library(janitor)
 library(rstanarm)
+library(infer)
+library(moderndive)
 library(reprex)
 library(sf)
 library(raster)
@@ -65,8 +67,27 @@ real_data <- real_data %>% mutate(technology = replace(technology, technology ==
 real_data <- real_data %>% mutate(technology = replace(technology, technology == "Onshore Wind Turbine", "Wind"))
 real_data <- real_data %>% mutate(technology = replace(technology, technology == "Offshore Wind Turbine", "Wind"))
 
+#Natural Gas
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Other Natural Gas", "Natural Gas"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Other Gases", "Natural Gas"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "", "Natural Gas"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Natural Gas with Compressed Air Storage", "Natural Gas"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Natural Gas Steam Turbine", "Natural Gas"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Natural Gas Internal Combustion Engine", "Natural Gas"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Natural Gas Fired Combustion Turbine", "Natural Gas"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Natural Gas Fired Combined Cycle", "Oil"))
 
 
+#Hydroelectric
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Conventional Hydroelectric", "Hydroelectric"))
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Hydroelectric Pumped Storage", "Hydroelectric"))
+
+real_data <- real_data %>% mutate(technology = replace(technology, technology == "Conventional Steam Coal", "Coal"))
+
+
+
+real_data<-real_data %>%filter(technology!="All Other")
+real_data<- real_data%>%filter(technology %in% c("Wind", "Solar", "Oil", "Nuclear", "Natural Gas", "Hydroelectric", "Geothermal", "Coal", "Biomass"))
 ```
 
 
@@ -76,4 +97,7 @@ real_data%>%
   ggplot(aes(party, technology)) + 
   geom_jitter(height = .1, alpha = .4)
 ```
+```{r}
+model1 <- aov(party ~ technology, data = real_data)
 
+```
